@@ -96,7 +96,7 @@ app.use(cookieParser());
 app.use(morgan('combined', { stream: loggerStream }));
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', (req: express.Request, res: express.Response) => {
   res.status(200).json({
     status: 'OK',
     timestamp: new Date().toISOString(),
@@ -116,7 +116,7 @@ app.use('/api/referrals', referralRoutes);
 app.use('/api/telegram', telegramRoutes);
 
 // API info endpoint
-app.get('/api', (req, res) => {
+app.get('/api', (req: express.Request, res: express.Response) => {
   res.json({
     name: 'Investment Bot API',
     version: '1.0.0',
