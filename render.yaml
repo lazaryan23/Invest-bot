@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: investment-bot-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm ci && npm run build
+    startCommand: node dist/index.js
+    plan: free
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        # Set in Render dashboard (secret)
+        value: ""
+      - key: JWT_SECRET
+        # Set in Render dashboard (secret)
+        value: ""
+      - key: CORS_ORIGINS
+        # Example: https://your-frontend.onrender.com,https://your-domain.com
+        value: "http://localhost:5173"
