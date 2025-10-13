@@ -20,6 +20,7 @@ import transactionRoutes from './routes/transactions';
 import walletRoutes from './routes/wallet';
 import referralRoutes from './routes/referrals';
 import telegramRoutes from './routes/telegram';
+import dashboardRoutes from './routes/dashboard';
 
 // Load environment variables
 dotenv.config();
@@ -115,6 +116,7 @@ app.use('/api/transactions', transactionRoutes);
 app.use('/api/wallet', walletRoutes);
 app.use('/api/referrals', referralRoutes);
 app.use('/api/telegram', telegramRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // API info endpoint
 app.get('/api', (req: express.Request, res: express.Response) => {

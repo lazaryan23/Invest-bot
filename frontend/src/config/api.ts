@@ -1,7 +1,14 @@
 // API Configuration
+// Helper to normalize BASE_URL to include /api
+function normalizeBaseUrl(raw?: string): string {
+  const base = raw || 'http://localhost:5000';
+  const trimmed = base.replace(/\/$/, '');
+  return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`;
+}
+
 export const API_CONFIG = {
-  // Base API URL - update this to your backend URL
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api',
+  // Base API URL - normalized to ensure it ends with /api
+  BASE_URL: normalizeBaseUrl(import.meta.env.VITE_API_BASE_URL),
   
   // API version
   VERSION: 'v1',
