@@ -103,6 +103,7 @@ app.get('/health', (req: express.Request, res: express.Response) => {
     uptime: process.uptime(),
     environment: process.env.NODE_ENV,
     version: process.env.npm_package_version || '1.0.0',
+    dbConnected: database.isConnectionReady(),
   });
 });
 
@@ -198,7 +199,11 @@ const server = app.listen(PORT, async () => {
     
   } catch (error) {
     logger.error('Failed to start server:', error);
-    process.exit(1);
+    if (process.env.ALLOW_START_WITHOUT_DB === 'true') {
+      logger.warn('ALLOW_START_WITHOUT_DB is true: starting server without DB connection.');
+    } else {
+      process.exit(1);
+    }
   }
 });
 
