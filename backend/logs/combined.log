@@ -1,0 +1,116 @@
+2025-10-12 02:05:26.871 [INFO]: Connected to MongoDB successfully
+2025-10-12 02:05:26.876 [INFO]: 🚀 Server is running on port 8000
+2025-10-12 02:05:26.877 [INFO]: 📊 Environment: development
+2025-10-12 02:05:26.877 [INFO]: 🔗 API URL: http://localhost:8000
+2025-10-12 02:05:26.878 [INFO]: 🏥 Health Check: http://localhost:8000/health
+2025-10-12 02:05:39.458 [INFO]: Connected to MongoDB successfully
+2025-10-12 02:05:39.464 [INFO]: 🚀 Server is running on port 8000
+2025-10-12 02:05:39.465 [INFO]: 📊 Environment: development
+2025-10-12 02:05:39.466 [INFO]: 🔗 API URL: http://localhost:8000
+2025-10-12 02:05:39.466 [INFO]: 🏥 Health Check: http://localhost:8000/health
+2025-10-12 02:05:53.148 [INFO]: Connected to MongoDB successfully
+2025-10-12 02:05:53.152 [INFO]: 🚀 Server is running on port 8000
+2025-10-12 02:05:53.152 [INFO]: 📊 Environment: development
+2025-10-12 02:05:53.153 [INFO]: 🔗 API URL: http://localhost:8000
+2025-10-12 02:05:53.153 [INFO]: 🏥 Health Check: http://localhost:8000/health
+2025-10-12 02:06:04.820 [INFO]: Connected to MongoDB successfully
+2025-10-12 02:06:04.827 [INFO]: 🚀 Server is running on port 8000
+2025-10-12 02:06:04.828 [INFO]: 📊 Environment: development
+2025-10-12 02:06:04.829 [INFO]: 🔗 API URL: http://localhost:8000
+2025-10-12 02:06:04.830 [INFO]: 🏥 Health Check: http://localhost:8000/health
+2025-10-12 02:06:15.824 [INFO]: Connected to MongoDB successfully
+2025-10-12 02:06:15.828 [INFO]: 🚀 Server is running on port 8000
+2025-10-12 02:06:15.828 [INFO]: 📊 Environment: development
+2025-10-12 02:06:15.829 [INFO]: 🔗 API URL: http://localhost:8000
+2025-10-12 02:06:15.829 [INFO]: 🏥 Health Check: http://localhost:8000/health
+2025-10-12 02:26:29.444 [INFO]: Connected to MongoDB successfully
+2025-10-12 02:26:29.450 [INFO]: 🚀 Server is running on port 5000
+2025-10-12 02:26:29.451 [INFO]: 📊 Environment: development
+2025-10-12 02:26:29.452 [INFO]: 🔗 API URL: http://localhost:5000
+2025-10-12 02:26:29.452 [INFO]: 🏥 Health Check: http://localhost:5000/health
+2025-10-12 02:27:38.434 [INFO]: Received SIGINT. Graceful shutdown initiated.
+2025-10-12 02:30:08.341 [INFO]: Connected to MongoDB successfully
+2025-10-12 02:30:08.347 [INFO]: 🚀 Server is running on port 5000
+2025-10-12 02:30:08.348 [INFO]: 📊 Environment: development
+2025-10-12 02:30:08.349 [INFO]: 🔗 API URL: http://localhost:5000
+2025-10-12 02:30:08.350 [INFO]: 🏥 Health Check: http://localhost:5000/health
+2025-10-12 02:31:16.015 [INFO]: ::1 - - [11/Oct/2025:22:31:16 +0000] "GET /api HTTP/1.1" 200 329 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0"
+2025-10-12 02:31:16.103 [INFO]: ::1 - - [11/Oct/2025:22:31:16 +0000] "GET /favicon.ico HTTP/1.1" 404 134 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0"
+2025-10-12 02:31:52.474 [ERROR]: Error: Not allowed by CORS
+Error: Not allowed by CORS
+    at origin (C:\Invest-bot\backend\src\index.ts:61:16)
+    at C:\Invest-bot\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (C:\Invest-bot\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (C:\Invest-bot\node_modules\cors\lib\index.js:204:7)
+    at Layer.handle [as handle_request] (C:\Invest-bot\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Invest-bot\node_modules\express\lib\router\index.js:328:13)
+    at C:\Invest-bot\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\Invest-bot\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Invest-bot\node_modules\express\lib\router\index.js:280:10)
+    at internalNext (C:\Invest-bot\node_modules\helmet\index.cjs:537:6)
+2025-10-12 02:31:52.508 [ERROR]: Error: Not allowed by CORS
+Error: Not allowed by CORS
+    at origin (C:\Invest-bot\backend\src\index.ts:61:16)
+    at C:\Invest-bot\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (C:\Invest-bot\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (C:\Invest-bot\node_modules\cors\lib\index.js:204:7)
+    at Layer.handle [as handle_request] (C:\Invest-bot\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Invest-bot\node_modules\express\lib\router\index.js:328:13)
+    at C:\Invest-bot\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\Invest-bot\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Invest-bot\node_modules\express\lib\router\index.js:280:10)
+    at internalNext (C:\Invest-bot\node_modules\helmet\index.cjs:537:6)
+2025-10-12 02:31:53.576 [ERROR]: Error: Not allowed by CORS
+Error: Not allowed by CORS
+    at origin (C:\Invest-bot\backend\src\index.ts:61:16)
+    at C:\Invest-bot\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (C:\Invest-bot\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (C:\Invest-bot\node_modules\cors\lib\index.js:204:7)
+    at Layer.handle [as handle_request] (C:\Invest-bot\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Invest-bot\node_modules\express\lib\router\index.js:328:13)
+    at C:\Invest-bot\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\Invest-bot\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Invest-bot\node_modules\express\lib\router\index.js:280:10)
+    at internalNext (C:\Invest-bot\node_modules\helmet\index.cjs:537:6)
+2025-10-12 02:31:53.586 [ERROR]: Error: Not allowed by CORS
+Error: Not allowed by CORS
+    at origin (C:\Invest-bot\backend\src\index.ts:61:16)
+    at C:\Invest-bot\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (C:\Invest-bot\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (C:\Invest-bot\node_modules\cors\lib\index.js:204:7)
+    at Layer.handle [as handle_request] (C:\Invest-bot\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Invest-bot\node_modules\express\lib\router\index.js:328:13)
+    at C:\Invest-bot\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\Invest-bot\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Invest-bot\node_modules\express\lib\router\index.js:280:10)
+    at internalNext (C:\Invest-bot\node_modules\helmet\index.cjs:537:6)
+2025-10-12 02:31:55.596 [ERROR]: Error: Not allowed by CORS
+Error: Not allowed by CORS
+    at origin (C:\Invest-bot\backend\src\index.ts:61:16)
+    at C:\Invest-bot\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (C:\Invest-bot\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (C:\Invest-bot\node_modules\cors\lib\index.js:204:7)
+    at Layer.handle [as handle_request] (C:\Invest-bot\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Invest-bot\node_modules\express\lib\router\index.js:328:13)
+    at C:\Invest-bot\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\Invest-bot\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Invest-bot\node_modules\express\lib\router\index.js:280:10)
+    at internalNext (C:\Invest-bot\node_modules\helmet\index.cjs:537:6)
+2025-10-12 02:31:55.601 [ERROR]: Error: Not allowed by CORS
+Error: Not allowed by CORS
+    at origin (C:\Invest-bot\backend\src\index.ts:61:16)
+    at C:\Invest-bot\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (C:\Invest-bot\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (C:\Invest-bot\node_modules\cors\lib\index.js:204:7)
+    at Layer.handle [as handle_request] (C:\Invest-bot\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Invest-bot\node_modules\express\lib\router\index.js:328:13)
+    at C:\Invest-bot\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\Invest-bot\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Invest-bot\node_modules\express\lib\router\index.js:280:10)
+    at internalNext (C:\Invest-bot\node_modules\helmet\index.cjs:537:6)
+2025-10-14 00:28:42.781 [INFO]: Connected to MongoDB successfully
+2025-10-14 00:28:42.784 [INFO]: 🚀 Server is running on port 5000
+2025-10-14 00:28:42.784 [INFO]: 📊 Environment: development
+2025-10-14 00:28:42.784 [INFO]: 🔗 API URL: http://localhost:5000
+2025-10-14 00:28:42.784 [INFO]: 🏥 Health Check: http://localhost:5000/health
+2025-10-14 00:31:12.827 [INFO]: ::1 - - [13/Oct/2025:20:31:12 +0000] "GET /health HTTP/1.1" 200 92 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.6584"
