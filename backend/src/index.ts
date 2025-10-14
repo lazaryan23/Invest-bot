@@ -59,7 +59,14 @@ const corsOptions = {
       'http://localhost:5173', // Vite dev server
     ];
 
-    const allowedOrigins = Array.from(new Set([...defaultDevOrigins, ...envOrigins]));
+    // Optional explicit frontend origin for production (set FRONTEND_URL=https://your-frontend.example.com)
+    const defaultProdOrigins = [process.env.FRONTEND_URL || ''].filter(Boolean);
+
+    const allowedOrigins = Array.from(new Set([
+      ...defaultDevOrigins,
+      ...defaultProdOrigins,
+      ...envOrigins,
+    ]));
 
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin || allowedOrigins.includes(origin)) {
@@ -68,11 +75,18 @@ const corsOptions = {
       callback(new Error(`Not allowed by CORS: ${origin}`));
     }
   },
+  // Set to true only if you use cookies for auth. If using Bearer tokens, you can set false.
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  // Include Telegram Web App header for auth handshakes
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Telegram-Init-Data'],
   optionsSuccessStatus: 200,
+  maxAge: 86400,
 };
 
 app.use(cors(corsOptions));
+// Ensure preflight requests are handled for all routes
+app.options('*', cors(corsOptions));
 
 // General rate limiting
 const generalLimiter = rateLimit({
