@@ -93,15 +93,6 @@ export function ProfilePage() {
     });
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'success': return 'green';
-      case 'failed': return 'red';
-      case 'pending': return 'yellow';
-      default: return 'gray';
-    }
-  };
-
   return (
     <Stack gap="lg" p="md">
       {/* Header */}
@@ -149,6 +140,9 @@ export function ProfilePage() {
           <Alert color="red" mb="md">
             {error.message || 'Failed to load profile'}
           </Alert>
+        )}
+        {isLoading && (
+          <Text size="sm" c="dimmed" mb="sm">Loading profile...</Text>
         )}
         <Group>
           <Avatar size={80} color="blue">

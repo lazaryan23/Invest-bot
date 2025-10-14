@@ -55,7 +55,7 @@ export function ReferralsPage() {
   const { formatCurrency } = settings;
 
   const referralCode = data?.referralCode?.code || '';
-  const referralLink = data?.referralCode?.url || (referralCode ? `https://t.me/InvestmentBot?start=${referralCode}` : '');
+  const referralLink = data?.referralCode?.url || (referralCode ? `https://t.me/Invest_smartBot?start=${referralCode}` : '');
 
   const handleCopyLink = () => {
     if (!referralLink) return;
@@ -69,7 +69,7 @@ export function ReferralsPage() {
   };
 
   const handleShare = (platform: string) => {
-    const message = `Join me on Investment Bot and start earning passive income! Use my referral code: ${mockReferralData.referralCode}`;
+    const message = `Join me on Investment Bot and start earning passive income! Use my referral code: ${referralCode}`;
     
     let url = '';
     switch (platform) {
@@ -113,6 +113,12 @@ export function ReferralsPage() {
   return (
     <Stack gap="lg" p="md">
       {/* Header */}
+      {error && (
+        <Alert color="red">{(error as any)?.message || 'Failed to load referral data'}</Alert>
+      )}
+      {isLoading && (
+        <Text size="sm" c="dimmed">Loading referral data...</Text>
+      )}
       <Group justify="space-between">
         <div>
           <Text fz={{base: 14, sm: 24}} c="light-dark(var(--mantine-color-black), var(--mantine-color-white)">👥 Referral Program</Text>

@@ -63,10 +63,10 @@ export function TransactionsPage() {
   const getTypeIcon = (type: string) => {
     switch (type) {
       case 'deposit': return <IconArrowDown size={16} />;
-      case 'withdrawal': return <IconArrowUp size={16} />;
+      case 'withdraw': return <IconArrowUp size={16} />;
       case 'investment': return <IconCoin size={16} />;
-      case 'interest': return <IconTrendingUp size={16} />;
-      case 'referral_bonus': return <IconUsers size={16} />;
+      case 'profit': return <IconTrendingUp size={16} />;
+      case 'referral': return <IconUsers size={16} />;
       default: return <IconRefresh size={16} />;
     }
   };
@@ -74,10 +74,10 @@ export function TransactionsPage() {
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'deposit': return 'blue';
-      case 'withdrawal': return 'orange';
+      case 'withdraw': return 'orange';
       case 'investment': return 'purple';
-      case 'interest': return 'green';
-      case 'referral_bonus': return 'pink';
+      case 'profit': return 'green';
+      case 'referral': return 'pink';
       default: return 'gray';
     }
   };
@@ -113,6 +113,12 @@ export function TransactionsPage() {
   return (
     <Stack gap="lg" p="md">
       {/* Header */}
+      {error && (
+        <Text c="red" size="sm">{(error as any)?.message || 'Failed to load transactions'}</Text>
+      )}
+      {isLoading && (
+        <Text c="dimmed" size="sm">Loading transactions...</Text>
+      )}
       <Group justify="space-between">
         <div>
           <Text fz={{base: 14, sm: 24}} c="light-dark(var(--mantine-color-black), var(--mantine-color-white)">📊 Transaction History</Text>
@@ -262,7 +268,7 @@ export function TransactionsPage() {
                       {formatTransactionType(transaction.type)}
                     </Text>
                     <Text size="xs" c="dimmed">
-                      {transaction.date}
+                      {transaction.createdAt}
                     </Text>
                   </div>
                 </Group>
@@ -270,12 +276,12 @@ export function TransactionsPage() {
                 <Group>
                   <div style={{ textAlign: 'right' }}>
                     <Text fw={500}>
-                      {transaction.type === 'withdrawal' || transaction.type === 'investment' ? '-' : '+'}
+                      {transaction.type === 'withdraw' || transaction.type === 'investment' ? '-' : '+'}
                       {formatCurrency(transaction.amount)}
                     </Text>
-                    {transaction.fee > 0 && (
+                    {typeof transaction.fee === 'number' && transaction.fee > 0 && (
                       <Text size="xs" c="dimmed">
-                        Fee: ${transaction.fee.toFixed(2)}
+                        Fee: {formatCurrency(transaction.fee)}
                       </Text>
                     )}
                   </div>
