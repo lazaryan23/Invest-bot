@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { notifications } from '@mantine/notifications';
 import { ApiService } from '@/services/api';
+import { isAuthReady } from '@/lib/api-client';
 import type {
   LoginRequest,
   RegisterRequest,
@@ -92,6 +93,8 @@ export const useUserProfile = () => {
     queryKey: [QUERY_KEYS.USER_PROFILE],
     queryFn: () => ApiService.auth.getProfile(),
     select: (data) => data.data,
+    enabled: isAuthReady(),
+    retry: false,
   });
 };
 
@@ -102,6 +105,8 @@ export const useDashboard = () => {
     queryFn: () => ApiService.dashboard.getDashboardData(),
     select: (data) => data.data,
     staleTime: 2 * 60 * 1000, // 2 minutes
+    enabled: isAuthReady(),
+    retry: false,
   });
 };
 
@@ -111,6 +116,8 @@ export const useRecentActivities = () => {
     queryFn: () => ApiService.dashboard.getRecentActivities(),
     select: (data) => data.data,
     staleTime: 1 * 60 * 1000, // 1 minute
+    enabled: isAuthReady(),
+    retry: false,
   });
 };
 
@@ -121,6 +128,8 @@ export const useInvestmentPlans = () => {
     queryFn: () => ApiService.investment.getInvestmentPlans(),
     select: (data) => data.data,
     staleTime: 10 * 60 * 1000, // 10 minutes - plans don't change often
+    enabled: isAuthReady(),
+    retry: false,
   });
 };
 
@@ -129,6 +138,8 @@ export const useInvestmentHistory = (params?: PaginationParams) => {
     queryKey: [QUERY_KEYS.INVESTMENT_HISTORY, params],
     queryFn: () => ApiService.investment.getInvestmentHistory(params),
     select: (data) => data.data,
+    enabled: isAuthReady(),
+    retry: false,
   });
 };
 
@@ -167,6 +178,8 @@ export const useWalletData = () => {
     queryFn: () => ApiService.wallet.getWalletData(),
     select: (data) => data.data,
     staleTime: 1 * 60 * 1000, // 1 minute
+    enabled: isAuthReady(),
+    retry: false,
   });
 };
 
@@ -176,6 +189,8 @@ export const useWalletBalance = () => {
     queryFn: () => ApiService.wallet.getWalletBalance(),
     select: (data) => data.data,
     staleTime: 30 * 1000, // 30 seconds
+    enabled: isAuthReady(),
+    retry: false,
   });
 };
 
@@ -184,6 +199,8 @@ export const useWalletTransactions = (params?: PaginationParams) => {
     queryKey: [QUERY_KEYS.WALLET_TRANSACTIONS, params],
     queryFn: () => ApiService.wallet.getWalletTransactions(params),
     select: (data) => data.data,
+    enabled: isAuthReady(),
+    retry: false,
   });
 };
 
@@ -193,6 +210,8 @@ export const useDepositAddress = () => {
     queryFn: () => ApiService.wallet.getDepositAddress(),
     select: (data) => data.data,
     staleTime: 60 * 60 * 1000, // 1 hour - address rarely changes
+    enabled: isAuthReady(),
+    retry: false,
   });
 };
 
@@ -252,6 +271,8 @@ export const useTransactions = (params?: PaginationParams & TransactionFilters) 
     queryKey: [QUERY_KEYS.TRANSACTIONS, params],
     queryFn: () => ApiService.transaction.getTransactions(params),
     select: (data) => data.data,
+    enabled: isAuthReady(),
+    retry: false,
   });
 };
 
@@ -260,7 +281,8 @@ export const useTransactionDetails = (id: string) => {
     queryKey: QUERY_KEYS.TRANSACTION_DETAILS(id),
     queryFn: () => ApiService.transaction.getTransactionDetails(id),
     select: (data) => data.data,
-    enabled: !!id,
+    enabled: !!id && isAuthReady(),
+    retry: false,
   });
 };
 
@@ -271,6 +293,8 @@ export const useReferralData = () => {
     queryFn: () => ApiService.referral.getReferralData(),
     select: (data) => data.data,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    enabled: isAuthReady(),
+    retry: false,
   });
 };
 
@@ -280,6 +304,8 @@ export const useReferralCode = () => {
     queryFn: () => ApiService.referral.getReferralCode(),
     select: (data) => data.data,
     staleTime: 10 * 60 * 1000, // 10 minutes
+    enabled: isAuthReady(),
+    retry: false,
   });
 };
 
@@ -313,5 +339,7 @@ export const useReferredUsers = (params?: PaginationParams) => {
     queryKey: [QUERY_KEYS.REFERRED_USERS, params],
     queryFn: () => ApiService.referral.getReferredUsers(params),
     select: (data) => data.data,
+    enabled: isAuthReady(),
+    retry: false,
   });
 };
