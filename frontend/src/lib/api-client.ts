@@ -179,11 +179,25 @@ export { TokenManager };
 // Helper to check if auth context is ready (JWT token or Telegram init data available)
 export function isAuthReady(): boolean {
   try {
+    // If we already have a JWT, we are ready
     if (TokenManager.getToken()) return true;
-    if (typeof window !== 'undefined') {
-      const tg = (window as any).Telegram?.WebApp;
-      if (tg && typeof tg.initData === 'string' && tg.initData.length > 0) return true;
-    }
-  } catch {}
-  return false;
+
+    // If running without a window (SSR), do not block queries
+    if (typeof window === 'undefined') return true;
+
+    const tg = (window as any).Telegram?.WebApp;
+
+    // If not inside Telegram, allow queries to proceed (public or JWT-based flows)
+    if (!tg) return true;
+
+    // If inside Telegram and initData exists, we are ready
+    if (typeof tg.initData === 'string' && tg.initData.length > 0) return true;
+
+    // Inside Telegram but no initData yet: allow queries to proceed to avoid blocking UI
+    // Backend can respond with 401 if it truly requires auth, which the UI will surface.
+    return true;
+  } catch {
+    // On any unexpected error, do not block the app
+    return true;
+  }
 }
