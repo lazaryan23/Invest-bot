@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Stack,
   Title,
@@ -17,6 +17,9 @@ import {
   Tooltip,
   Modal,
 } from '@mantine/core';
+import { useTransactions } from '@/hooks/api';
+import { useSettings } from '@/contexts/SettingsContext';
+import type { TransactionStatus, TransactionType } from '@/types/api';
 import { useDisclosure } from '@mantine/hooks';
 import {
   IconArrowDown,
@@ -33,77 +36,7 @@ import {
   IconUsers,
 } from '@tabler/icons-react';
 
-// Mock transaction data
-const mockTransactions = [
-  {
-    id: '1',
-    type: 'deposit',
-    amount: 1000,
-    status: 'completed',
-    date: '2024-01-15 14:30:25',
-    txHash: '0x1234567890abcdef1234567890abcdef12345678',
-    fromAddress: 'TQrZ9K1mFp8jKzAP5yN2cXhB4vN8fGhJ6L',
-    description: 'USDT Deposit',
-    fee: 0,
-  },
-  {
-    id: '2',
-    type: 'investment',
-    amount: 500,
-    status: 'completed',
-    date: '2024-01-15 15:45:10',
-    description: 'Daily Plan Investment',
-    investmentId: 'INV001',
-    fee: 0,
-  },
-  {
-    id: '3',
-    type: 'interest',
-    amount: 6,
-    status: 'completed',
-    date: '2024-01-16 00:00:15',
-    description: 'Daily Interest Payment',
-    investmentId: 'INV001',
-    fee: 0,
-  },
-  {
-    id: '4',
-    type: 'referral_bonus',
-    amount: 30,
-    status: 'completed',
-    date: '2024-01-16 10:20:30',
-    description: 'Referral Bonus - Friend Investment',
-    referralUserId: 'USER123',
-    fee: 0,
-  },
-  {
-    id: '5',
-    type: 'withdrawal',
-    amount: 200,
-    status: 'pending',
-    date: '2024-01-16 16:15:45',
-    toAddress: 'TMqZ8K2nGp9jLzBP6yO3dXiC5wO9gHiK7M',
-    description: 'USDT Withdrawal',
-    fee: 1,
-  },
-  {
-    id: '6',
-    type: 'investment',
-    amount: 300,
-    status: 'completed',
-    date: '2024-01-14 11:30:20',
-    description: 'Weekly Plan Investment',
-    investmentId: 'INV002',
-    fee: 0,
-  },
-];
-
-const mockStats = {
-  totalTransactions: 156,
-  totalVolume: 25430.50,
-  pendingCount: 3,
-  completedCount: 153,
-};
+// Removed mock data; using real API data
 
 export function TransactionsPage() {
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
@@ -112,6 +45,20 @@ export function TransactionsPage() {
   const [filterStatus, setFilterStatus] = useState<string | null>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+
+  const settings = useSettings();
+  const { formatCurrency } = settings;
+
+  const params = useMemo(() => ({
+    page: currentPage,
+    limit: 10,
+    type: filterType && filterType !== 'all' ? [filterType as TransactionType] : undefined,
+    status: filterStatus && filterStatus !== 'all' ? [filterStatus as TransactionStatus] : undefined,
+  }), [currentPage, filterType, filterStatus]);
+
+  const { data, isLoading, error } = useTransactions(params);
+  const apiTransactions = data?.transactions || [];
+  const total = data?.total || apiTransactions.length;
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -149,13 +96,12 @@ export function TransactionsPage() {
     return type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
-  const filteredTransactions = mockTransactions.filter(tx => {
+  const filteredTransactions = apiTransactions.filter((tx: any) => {
     const typeMatch = filterType === 'all' || tx.type === filterType;
     const statusMatch = filterStatus === 'all' || tx.status === filterStatus;
-    const searchMatch = searchTerm === '' || 
-      tx.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tx.txHash?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+    const searchMatch = searchTerm === '' ||
+      (tx.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (tx.hash || '').toLowerCase().includes(searchTerm.toLowerCase());
     return typeMatch && statusMatch && searchMatch;
   });
 
@@ -192,7 +138,7 @@ export function TransactionsPage() {
               <IconCalendar size={14} />
             </ThemeIcon>
           </Group>
-          <Text size="lg" fw={700}>{mockStats.totalTransactions}</Text>
+          <Text size="lg" fw={700}>{total}</Text>
           <Text size="xs" c="dimmed">Transactions</Text>
         </Card>
 
@@ -203,7 +149,7 @@ export function TransactionsPage() {
               <IconTrendingUp size={14} />
             </ThemeIcon>
           </Group>
-          <Text size="lg" fw={700}>${mockStats.totalVolume.toFixed(0)}</Text>
+          <Text size="lg" fw={700}>{formatCurrency(apiTransactions.reduce((sum: number, t: any) => sum + (t.amount || 0), 0))}</Text>
           <Text size="xs" c="dimmed">USDT</Text>
         </Card>
 
@@ -214,7 +160,7 @@ export function TransactionsPage() {
               <IconRefresh size={14} />
             </ThemeIcon>
           </Group>
-          <Text size="lg" fw={700}>{mockStats.pendingCount}</Text>
+          <Text size="lg" fw={700}>{apiTransactions.filter((t: any) => t.status === 'pending').length}</Text>
           <Text size="xs" c="dimmed">Transactions</Text>
         </Card>
 
@@ -225,7 +171,7 @@ export function TransactionsPage() {
               <IconCheck size={14} />
             </ThemeIcon>
           </Group>
-          <Text size="lg" fw={700}>{mockStats.completedCount}</Text>
+          <Text size="lg" fw={700}>{apiTransactions.filter((t: any) => t.status === 'completed').length}</Text>
           <Text size="xs" c="dimmed">Transactions</Text>
         </Card>
       </SimpleGrid>
@@ -325,7 +271,7 @@ export function TransactionsPage() {
                   <div style={{ textAlign: 'right' }}>
                     <Text fw={500}>
                       {transaction.type === 'withdrawal' || transaction.type === 'investment' ? '-' : '+'}
-                      ${transaction.amount.toFixed(2)}
+                      {formatCurrency(transaction.amount)}
                     </Text>
                     {transaction.fee > 0 && (
                       <Text size="xs" c="dimmed">
@@ -347,12 +293,12 @@ export function TransactionsPage() {
                 {transaction.description}
               </Text>
 
-              {transaction.txHash && (
+              {transaction.hash && (
                 <Group mt="xs">
                   <Text size="xs" c="dimmed" ff="monospace">
-                    {transaction.txHash.substring(0, 20)}...
+                    {transaction.hash.substring(0, 20)}...
                   </Text>
-                  <CopyButton value={transaction.txHash}>
+                  <CopyButton value={transaction.hash}>
                     {({ copied, copy }) => (
                       <Tooltip label={copied ? 'Copied!' : 'Copy hash'}>
                         <ActionIcon size="xs" color={copied ? 'green' : 'blue'} onClick={(e) => { e.stopPropagation(); copy(); }}>
@@ -409,7 +355,7 @@ export function TransactionsPage() {
                     {formatTransactionType(selectedTransaction.type)}
                   </Text>
                   <Text size="sm" c="dimmed">
-                    {selectedTransaction.date}
+                    {selectedTransaction.createdAt}
                   </Text>
                 </div>
               </Group>
@@ -426,7 +372,7 @@ export function TransactionsPage() {
               <Stack gap="sm">
                 <Group justify="apart">
                   <Text size="sm" c="dimmed">Amount:</Text>
-                  <Text fw={500}>${selectedTransaction.amount.toFixed(2)} USDT</Text>
+                  <Text fw={500}>{formatCurrency(selectedTransaction.amount)} USDT</Text>
                 </Group>
                 
                 {selectedTransaction.fee > 0 && (
@@ -450,14 +396,14 @@ export function TransactionsPage() {
               </Stack>
             </Card>
 
-            {selectedTransaction.txHash && (
+            {selectedTransaction.hash && (
               <Card withBorder padding="md">
                 <Text size="sm" fw={500} mb="xs">Transaction Hash:</Text>
                 <Group>
                   <Text size="sm" ff="monospace" style={{ wordBreak: 'break-all', flex: 1 }}>
-                    {selectedTransaction.txHash}
+                    {selectedTransaction.hash}
                   </Text>
-                  <CopyButton value={selectedTransaction.txHash}>
+                  <CopyButton value={selectedTransaction.hash}>
                     {({ copied, copy }) => (
                       <Tooltip label={copied ? 'Copied!' : 'Copy hash'}>
                         <ActionIcon color={copied ? 'green' : 'blue'} onClick={copy}>

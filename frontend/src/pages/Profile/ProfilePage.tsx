@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useSettings } from '@/contexts/SettingsContext';
+import { useUserProfile } from '@/hooks/api';
 import {
   Stack,
   Title,
@@ -42,72 +43,7 @@ import {
   IconBrandTelegram,
 } from '@tabler/icons-react';
 
-// Mock user data
-const mockUserData = {
-  id: 'user123',
-  firstName: 'John',
-  lastName: 'Doe',
-  username: 'john_crypto',
-  email: 'john.doe@example.com',
-  phone: '+1234567890',
-  telegramId: 123456789,
-  country: 'United States',
-  language: 'English',
-  timezone: 'UTC-5',
-  joinDate: '2024-01-01',
-  lastLogin: '2024-01-16 15:30:25',
-  isVerified: true,
-  twoFactorEnabled: true,
-  avatar: null,
-  preferences: {
-    darkMode: false,
-    notifications: {
-      email: true,
-      telegram: true,
-      investment: true,
-      withdrawal: true,
-      referral: true,
-      security: true,
-    },
-    language: 'en',
-    currency: 'USD',
-  },
-};
-
-const mockSecurityLog = [
-  {
-    id: '1',
-    action: 'Login',
-    device: 'Chrome on Windows',
-    location: 'New York, US',
-    timestamp: '2024-01-16 15:30:25',
-    status: 'success',
-  },
-  {
-    id: '2',
-    action: 'Withdrawal Request',
-    device: 'Telegram Bot',
-    location: 'New York, US',
-    timestamp: '2024-01-16 14:20:15',
-    status: 'success',
-  },
-  {
-    id: '3',
-    action: 'Password Change',
-    device: 'Mobile App',
-    location: 'New York, US',
-    timestamp: '2024-01-15 10:15:30',
-    status: 'success',
-  },
-  {
-    id: '4',
-    action: 'Failed Login Attempt',
-    device: 'Unknown',
-    location: 'Unknown Location',
-    timestamp: '2024-01-14 22:45:12',
-    status: 'failed',
-  },
-];
+// Removed mock user data; real data will be fetched via API
 
 export function ProfilePage() {
   const settings = useSettings();
@@ -115,16 +51,26 @@ export function ProfilePage() {
   const [editing, setEditing] = useState(false);
   const [activeTab, setActiveTab] = useState<string | null>('profile');
   const [securityOpened, { open: openSecurity, close: closeSecurity }] = useDisclosure(false);
-  const [notificationSettings, setNotificationSettings] = useState(mockUserData.preferences.notifications);
+
+  const { data: user, isLoading, error } = useUserProfile();
+
+  const [notificationSettings, setNotificationSettings] = useState({
+    email: true,
+    telegram: true,
+    investment: true,
+    withdrawal: true,
+    referral: true,
+    security: true,
+  });
 
   const form = useForm({
     initialValues: {
-      firstName: mockUserData.firstName,
-      lastName: mockUserData.lastName,
-      email: mockUserData.email,
-      phone: mockUserData.phone,
-      country: mockUserData.country,
-      language: mockUserData.language,
+      firstName: user?.firstName || '',
+      lastName: user?.lastName || '',
+      email: user?.email || '',
+      phone: user?.phone || '',
+      country: '',
+      language: 'English',
     },
   });
 
@@ -199,25 +145,30 @@ export function ProfilePage() {
 
       {/* Profile Overview */}
       <Card withBorder padding="lg">
+        {error && (
+          <Alert color="red" mb="md">
+            {error.message || 'Failed to load profile'}
+          </Alert>
+        )}
         <Group>
           <Avatar size={80} color="blue">
-            {mockUserData.firstName.charAt(0) + mockUserData.lastName.charAt(0)}
+            {(user?.firstName?.charAt(0) || '?') + (user?.lastName?.charAt(0) || '')}
           </Avatar>
           <div style={{ flex: 1 }}>
             <Group justify="apart">
               <div>
                 <Group gap="sm">
                   <Title order={3}>
-                    {mockUserData.firstName} {mockUserData.lastName}
+                    {user?.firstName || ''} {user?.lastName || ''}
                   </Title>
-                  {mockUserData.isVerified && (
+                  {user?.isEmailVerified && (
                     <Badge color="green" variant="light" size="sm">
                       ✓ Verified
                     </Badge>
                   )}
                 </Group>
                 <Text c="dimmed" size="sm">
-                  @{mockUserData.username} • Joined {mockUserData.joinDate}
+                  @{user?.username || ''}
                 </Text>
               </div>
             </Group>
@@ -227,7 +178,7 @@ export function ProfilePage() {
                 <ThemeIcon size="sm" variant="light" color="blue">
                   <IconMail size={12} />
                 </ThemeIcon>
-                <Text size="sm">{mockUserData.email}</Text>
+                <Text size="sm">{user?.email || '—'}</Text>
               </Group>
               <Group gap="xs">
                 <ThemeIcon size="sm" variant="light" color="green">
@@ -239,7 +190,7 @@ export function ProfilePage() {
                 <ThemeIcon size="sm" variant="light" color="orange">
                   <IconWorld size={12} />
                 </ThemeIcon>
-                <Text size="sm">{mockUserData.country}</Text>
+                <Text size="sm">—</Text>
               </Group>
             </SimpleGrid>
           </div>
@@ -329,7 +280,7 @@ export function ProfilePage() {
                   Complete verification to increase your limits
                 </Text>
               </div>
-              {mockUserData.isVerified ? (
+              {user?.isEmailVerified ? (
                 <Badge color="green" size="lg">
                   ✓ Verified
                 </Badge>
@@ -357,7 +308,7 @@ export function ProfilePage() {
                     </Text>
                   </div>
                   <Switch
-                    checked={mockUserData.twoFactorEnabled}
+                    checked={false}
                     color="green"
                     size="md"
                   />
@@ -408,30 +359,7 @@ export function ProfilePage() {
               </Group>
 
               <Stack gap="sm">
-                {mockSecurityLog.slice(0, 4).map((log) => (
-                  <Card key={log.id} withBorder padding="sm">
-                    <Group justify="apart">
-                      <Group>
-                        <ThemeIcon
-                          color={getStatusColor(log.status)}
-                          variant="light"
-                          size="sm"
-                        >
-                          {log.status === 'success' ? <IconCheck size={14} /> : <IconX size={14} />}
-                        </ThemeIcon>
-                        <div>
-                          <Text fw={500} size="sm">{log.action}</Text>
-                          <Text size="xs" c="dimmed">
-                            {log.device} • {log.location}
-                          </Text>
-                        </div>
-                      </Group>
-                      <Text size="xs" c="dimmed">
-                        {log.timestamp}
-                      </Text>
-                    </Group>
-                  </Card>
-                ))}
+                <Text size="sm" c="dimmed">No recent security activity.</Text>
               </Stack>
             </Card>
           </Stack>

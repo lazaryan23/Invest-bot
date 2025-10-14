@@ -17,6 +17,8 @@ import {
   Divider,
   Modal,
 } from '@mantine/core';
+import { useReferralData } from '@/hooks/api';
+import { useSettings } from '@/contexts/SettingsContext';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import {
@@ -36,66 +38,7 @@ import {
   IconAward,
 } from '@tabler/icons-react';
 
-// Mock referral data
-const mockReferralData = {
-  referralCode: 'INVEST2024',
-  totalReferrals: 15,
-  activeReferrals: 12,
-  totalEarnings: 450.75,
-  thisMonthEarnings: 125.50,
-  conversionRate: 65, // percentage
-  nextLevelReferrals: 25,
-  currentLevel: 'Silver',
-  nextLevel: 'Gold',
-};
-
-const mockReferralHistory = [
-  {
-    id: '1',
-    username: 'john_crypto',
-    joinDate: '2024-01-15',
-    totalInvested: 2000,
-    earnings: 60,
-    status: 'active',
-    level: 2,
-  },
-  {
-    id: '2',
-    username: 'sarah_investor',
-    joinDate: '2024-01-12',
-    totalInvested: 1500,
-    earnings: 45,
-    status: 'active',
-    level: 1,
-  },
-  {
-    id: '3',
-    username: 'mike_trader',
-    joinDate: '2024-01-10',
-    totalInvested: 5000,
-    earnings: 150,
-    status: 'active',
-    level: 3,
-  },
-  {
-    id: '4',
-    username: 'anna_defi',
-    joinDate: '2024-01-08',
-    totalInvested: 800,
-    earnings: 24,
-    status: 'inactive',
-    level: 1,
-  },
-  {
-    id: '5',
-    username: 'crypto_bob',
-    joinDate: '2024-01-05',
-    totalInvested: 3200,
-    earnings: 96,
-    status: 'active',
-    level: 2,
-  },
-];
+// Removed mock referral data; using real API data
 
 const referralLevels = [
   { name: 'Bronze', minReferrals: 0, bonus: '3%', color: '#CD7F32' },
@@ -107,9 +50,15 @@ const referralLevels = [
 
 export function ReferralsPage() {
   const [shareOpened, { open: openShare, close: closeShare }] = useDisclosure(false);
-  const referralLink = `https://t.me/InvestmentBot?start=${mockReferralData.referralCode}`;
+  const { data, isLoading, error } = useReferralData();
+  const settings = useSettings();
+  const { formatCurrency } = settings;
+
+  const referralCode = data?.referralCode?.code || '';
+  const referralLink = data?.referralCode?.url || (referralCode ? `https://t.me/InvestmentBot?start=${referralCode}` : '');
 
   const handleCopyLink = () => {
+    if (!referralLink) return;
     navigator.clipboard.writeText(referralLink);
     notifications.show({
       title: 'Copied!',
@@ -141,11 +90,14 @@ export function ReferralsPage() {
   };
 
   const getCurrentLevelInfo = () => {
-    return referralLevels.find(level => 
-      mockReferralData.totalReferrals >= level.minReferrals &&
-      (referralLevels.indexOf(level) === referralLevels.length - 1 ||
-       mockReferralData.totalReferrals < referralLevels[referralLevels.indexOf(level) + 1].minReferrals)
-    ) || referralLevels[0];
+    const totalReferrals = data?.stats?.totalReferrals ?? 0;
+    return (
+      referralLevels.find(level => 
+        totalReferrals >= level.minReferrals &&
+        (referralLevels.indexOf(level) === referralLevels.length - 1 ||
+         totalReferrals < referralLevels[referralLevels.indexOf(level) + 1].minReferrals)
+      ) || referralLevels[0]
+    );
   };
 
   const getNextLevelInfo = () => {
@@ -156,7 +108,7 @@ export function ReferralsPage() {
   const currentLevel = getCurrentLevelInfo();
   const nextLevel = getNextLevelInfo();
   const progressToNextLevel = nextLevel ? 
-    ((mockReferralData.totalReferrals - currentLevel.minReferrals) / (nextLevel.minReferrals - currentLevel.minReferrals)) * 100 : 100;
+    (((data?.stats?.totalReferrals ?? 0) - currentLevel.minReferrals) / (nextLevel.minReferrals - currentLevel.minReferrals)) * 100 : 100;
 
   return (
     <Stack gap="lg" p="md">
@@ -188,9 +140,9 @@ export function ReferralsPage() {
             </ThemeIcon>
           </Group>
           <Text size="xl" fw={700} c="blue">
-            {mockReferralData.totalReferrals}
+            {data?.stats?.totalReferrals ?? 0}
           </Text>
-          <Text size="xs" c="dimmed">{mockReferralData.activeReferrals} active</Text>
+          <Text size="xs" c="dimmed">{data?.stats?.activeReferrals ?? 0} active</Text>
         </Card>
 
         <Card withBorder padding="lg">
@@ -201,9 +153,9 @@ export function ReferralsPage() {
             </ThemeIcon>
           </Group>
           <Text size="xl" fw={700} c="green">
-            ${mockReferralData.totalEarnings.toFixed(2)}
+            {formatCurrency(data?.stats?.totalEarnings || 0)}
           </Text>
-          <Text size="xs" c="dimmed">USDT earned</Text>
+          <Text size="xs" c="dimmed">Earnings</Text>
         </Card>
 
         <Card withBorder padding="lg">
@@ -214,7 +166,7 @@ export function ReferralsPage() {
             </ThemeIcon>
           </Group>
           <Text size="xl" fw={700} c="orange">
-            ${mockReferralData.thisMonthEarnings.toFixed(2)}
+            {formatCurrency(data?.stats?.currentMonthEarnings || 0)}
           </Text>
           <Text size="xs" c="dimmed">This month earnings</Text>
         </Card>
@@ -252,12 +204,12 @@ export function ReferralsPage() {
 
         <Group justify="apart" align="center" mb="md">
           <div style={{ flex: 1 }}>
-            <Text size="sm" c="dimmed" mb="xs">Referral Code:</Text>
-            <Group>
-              <Text ff="monospace" fw={500} size="lg">
-                {mockReferralData.referralCode}
-              </Text>
-              <CopyButton value={mockReferralData.referralCode}>
+              <Text size="sm" c="dimmed" mb="xs">Referral Code:</Text>
+              <Group>
+                <Text ff="monospace" fw={500} size="lg">
+                  {referralCode || '—'}
+                </Text>
+                <CopyButton value={referralCode}>
                 {({ copied, copy }) => (
                   <Tooltip label={copied ? 'Copied!' : 'Copy code'}>
                     <ActionIcon color={copied ? 'green' : 'blue'} onClick={copy}>
@@ -278,10 +230,10 @@ export function ReferralsPage() {
           </Button>
         </Group>
 
-        <Text size="sm" c="dimmed" mb="xs">Full Referral Link:</Text>
+          <Text size="sm" c="dimmed" mb="xs">Full Referral Link:</Text>
         <Group justify="apart" align="center">
           <Text size="sm" ff="monospace" style={{ wordBreak: 'break-all', flex: 1 }}>
-            {referralLink}
+            {referralLink || '—'}
           </Text>
           <CopyButton value={referralLink}>
             {({ copied, copy }) => (
@@ -336,11 +288,11 @@ export function ReferralsPage() {
           </Group>
 
           <Group justify="apart" mb="xs">
-            <Text size="sm">
+              <Text size="sm">
               Progress to {nextLevel.name} Level
             </Text>
             <Text size="sm" c="dimmed">
-              {mockReferralData.totalReferrals} / {nextLevel.minReferrals} referrals
+              {(data?.stats?.totalReferrals ?? 0)} / {nextLevel.minReferrals} referrals
             </Text>
           </Group>
 
@@ -360,7 +312,7 @@ export function ReferralsPage() {
             <div style={{ textAlign: 'right' }}>
               <Text size="sm" fw={500}>Next Level: {nextLevel.bonus}</Text>
               <Text size="xs" c="dimmed">
-                {nextLevel.minReferrals - mockReferralData.totalReferrals} more referrals needed
+                {Math.max(nextLevel.minReferrals - (data?.stats?.totalReferrals ?? 0), 0)} more referrals needed
               </Text>
             </div>
           </Group>
@@ -404,12 +356,12 @@ export function ReferralsPage() {
         <Group justify="apart" mb="md">
           <Title order={3}>📊 Your Referrals</Title>
           <Badge color="blue" variant="light">
-            {mockReferralHistory.length} total
+            {data?.referredUsers?.length ?? 0} total
           </Badge>
         </Group>
 
         <Stack gap="md">
-          {mockReferralHistory.map((referral) => (
+          {(data?.referredUsers || []).map((referral) => (
             <Card key={referral.id} withBorder padding="sm">
               <Group justify="apart">
                 <Group>
@@ -422,7 +374,7 @@ export function ReferralsPage() {
                     </Text>
                     <Group gap="xs">
                       <Text size="xs" c="dimmed">
-                        Joined {referral.joinDate}
+                        Joined {referral.registeredAt}
                       </Text>
                       <Badge size="xs" color="blue" variant="light">
                         Level {referral.level}
@@ -433,17 +385,17 @@ export function ReferralsPage() {
 
                 <div style={{ textAlign: 'right' }}>
                   <Text fw={500} size="sm" c="green">
-                    +${referral.earnings.toFixed(2)}
+                    +{formatCurrency(referral.yourEarnings)}
                   </Text>
                   <Text size="xs" c="dimmed">
-                    from ${referral.totalInvested} invested
+                    from {formatCurrency(referral.totalInvested)} invested
                   </Text>
                   <Badge
                     size="xs"
-                    color={referral.status === 'active' ? 'green' : 'gray'}
+                    color={referral.isActive ? 'green' : 'gray'}
                     mt="xs"
                   >
-                    {referral.status}
+                    {referral.isActive ? 'active' : 'inactive'}
                   </Badge>
                 </div>
               </Group>
@@ -451,7 +403,7 @@ export function ReferralsPage() {
           ))}
         </Stack>
 
-        {mockReferralHistory.length === 0 && (
+        {(data?.referredUsers?.length ?? 0) === 0 && (
           <Group justify="center" py="xl">
             <Stack align="center" gap="md">
               <ThemeIcon size="xl" variant="light" color="gray">
@@ -480,9 +432,9 @@ export function ReferralsPage() {
             <Text size="sm" mb="xs" fw={500}>Your Referral Code:</Text>
             <Group justify="apart">
               <Text ff="monospace" fw={700} size="lg">
-                {mockReferralData.referralCode}
+                {referralCode || '—'}
               </Text>
-              <CopyButton value={mockReferralData.referralCode}>
+              <CopyButton value={referralCode}>
                 {({ copied, copy }) => (
                   <ActionIcon color={copied ? 'green' : 'blue'} onClick={copy}>
                     {copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
