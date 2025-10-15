@@ -48,6 +48,10 @@ export class AuthService {
     return apiClient.post<AuthResponse>(API_ENDPOINTS.AUTH.REFRESH);
   }
 
+  static async telegramLogin(telegramInitData?: string) {
+    return apiClient.post<AuthResponse>(API_ENDPOINTS.AUTH.TELEGRAM, telegramInitData ? { telegramData: telegramInitData } : undefined, { attachTelegramHeader: !telegramInitData });
+  }
+
   static async getProfile() {
     return apiClient.get<User>(API_ENDPOINTS.AUTH.PROFILE);
   }

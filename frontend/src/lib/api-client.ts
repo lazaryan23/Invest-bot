@@ -1,4 +1,4 @@
-import { API_CONFIG } from '@/config/api';
+import { API_CONFIG, API_ENDPOINTS } from '@/config/api';
 
 // API Response wrapper
 export interface ApiResponse<T = any> {
@@ -62,28 +62,48 @@ class HttpClient {
     this.defaultHeaders = { ...API_CONFIG.DEFAULT_HEADERS };
   }
 
-  private async request<T>(
-    url: string,
-    options: RequestInit = {}
-  ): Promise<ApiResponse<T>> {
-    const token = TokenManager.getToken();
-    
-    // Get Telegram init data for authentication
-    let telegramInitData = '';
+  private getTelegramInitData(): string {
     try {
       if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp) {
-        telegramInitData = (window as any).Telegram.WebApp.initData;
+        return (window as any).Telegram.WebApp.initData || '';
       }
-    } catch (error) {
-      console.log('Not running in Telegram environment');
-    }
-    
+    } catch {}
+    return '';
+  }
+
+  private async telegramLogin(): Promise<boolean> {
+    const initData = this.getTelegramInitData();
+    if (!initData) return false;
+
+    try {
+      const res = await fetch(`${this.baseURL}${API_ENDPOINTS.AUTH.TELEGRAM}`, {
+        method: 'POST',
+        headers: { ...this.defaultHeaders, 'X-Telegram-Init-Data': initData },
+      });
+      if (!res.ok) return false;
+      const body = await res.json();
+      if (body?.data?.accessToken) {
+        TokenManager.setToken(body.data.accessToken);
+        if (body.data.refreshToken) TokenManager.setRefreshToken(body.data.refreshToken);
+        return true;
+      }
+    } catch {}
+    return false;
+  }
+
+  private async request<T>(
+    url: string,
+    options: RequestInit & { attachTelegramHeader?: boolean; _retry?: boolean } = {}
+  ): Promise<ApiResponse<T>> {
+    const token = TokenManager.getToken();
+    const telegramInitData = this.getTelegramInitData();
+
     const headers = {
       ...this.defaultHeaders,
       ...options.headers,
       ...(token && { Authorization: `Bearer ${token}` }),
-      ...(telegramInitData && { 'X-Telegram-Init-Data': telegramInitData }),
-    };
+      ...(options.attachTelegramHeader && telegramInitData && { 'X-Telegram-Init-Data': telegramInitData }),
+    } as Record<string, string>;
 
     const config: RequestInit = {
       ...options,
@@ -91,8 +111,21 @@ class HttpClient {
     };
 
     try {
-      const response = await fetch(`${this.baseURL}${url}`, config);
-      
+      let response = await fetch(`${this.baseURL}${url}`, config);
+
+      // If unauthorized and we can login via Telegram, try once then retry the request
+      if (response.status === 401 && !token && !options._retry && telegramInitData) {
+        const loggedIn = await this.telegramLogin();
+        if (loggedIn) {
+          const newToken = TokenManager.getToken();
+          const retryHeaders = {
+            ...headers,
+            ...(newToken && { Authorization: `Bearer ${newToken}` }),
+          } as Record<string, string>;
+          response = await fetch(`${this.baseURL}${url}`, { ...config, headers: retryHeaders, _retry: true } as any);
+        }
+      }
+
       if (!response.ok) {
         await this.handleErrorResponse(response);
       }
@@ -144,10 +177,11 @@ class HttpClient {
     });
   }
 
-  async post<T>(url: string, data?: any): Promise<ApiResponse<T>> {
+  async post<T>(url: string, data?: any, extra?: { attachTelegramHeader?: boolean }): Promise<ApiResponse<T>> {
     return this.request<T>(url, {
       method: 'POST',
       body: data ? JSON.stringify(data) : undefined,
+      ...(extra || {}),
     });
   }
 

@@ -32,6 +32,7 @@ export const API_ENDPOINTS = {
     REGISTER: '/auth/register',
     REFRESH: '/auth/refresh',
     PROFILE: '/auth/profile',
+    TELEGRAM: '/auth/telegram',
   },
   
   // Dashboard
