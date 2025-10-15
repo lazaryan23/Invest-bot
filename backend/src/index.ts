@@ -49,10 +49,8 @@ app.use(helmet({
 // CORS configuration (read from env)
 const corsOptions = {
   origin: function (origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) {
-    const envOrigins = (process.env.CORS_ORIGINS || '')
-      .split(',')
-      .map(o => o.trim())
-      .filter(Boolean);
+    const rawEnv = (process.env.CORS_ORIGINS || '').split(',');
+    const envOrigins = rawEnv.map(o => o.trim()).filter(Boolean);
 
     const defaultDevOrigins = [
       'http://localhost:3000', // React dev server
@@ -62,24 +60,32 @@ const corsOptions = {
     // Optional explicit frontend origin for production (set FRONTEND_URL=https://your-frontend.example.com)
     const defaultProdOrigins = [process.env.FRONTEND_URL || ''].filter(Boolean);
 
+    const allowAll = (process.env.CORS_ORIGINS || '').trim() === '*';
+
     const allowedOrigins = Array.from(new Set([
       ...defaultDevOrigins,
       ...defaultProdOrigins,
       ...envOrigins,
+      'null', // Some in-app webviews (incl. Telegram) may send Origin: null
     ]));
 
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error(`Not allowed by CORS: ${origin}`));
+    // Allow any HTTPS origin if explicitly configured with '*'
+    if (allowAll) {
+      return callback(null, true);
     }
+
+    // Allow requests with no origin (like mobile apps or curl requests) or from whitelisted origins
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`Not allowed by CORS: ${origin}`));
   },
   // Set to true only if you use cookies for auth. If using Bearer tokens, you can set false.
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   // Include Telegram Web App header for auth handshakes
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Telegram-Init-Data'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Telegram-Init-Data', 'x-telegram-init-data'],
   optionsSuccessStatus: 200,
   maxAge: 86400,
 };
