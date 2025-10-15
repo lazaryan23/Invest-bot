@@ -1,34 +1,25 @@
-import { Router, Request, Response } from 'express';
+import { Router } from 'express';
 import { body } from 'express-validator';
 import { asyncHandler } from '../middleware/errorHandler';
 import { validateRequest } from '../middleware/validation';
 import * as authController from '../controllers/authController';
+import { authMiddleware, AuthenticatedRequest } from '../middleware/auth';
+import { User } from '../models/User';
 
 const router = Router();
 
-// Simple demo profile endpoint to unblock frontend
-router.get('/profile', (req: Request, res: Response) => {
-  const data = {
-    id: 'demo-user',
-    email: 'demo@example.com',
-    username: 'demo',
-    firstName: 'Demo',
-    lastName: 'User',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    isEmailVerified: true,
-    isPhoneVerified: false,
-  };
-  return res.status(200).json({ success: true, data });
+// Protected profile endpoint
+router.get('/profile', authMiddleware, async (req: AuthenticatedRequest, res) => {
+  const user = await User.findById(req.userId);
+  if (!user) return res.status(404).json({ success: false, error: 'User not found' } as any);
+  return res.status(200).json({ success: true, data: user.toJSON() } as any);
 });
 
-// Telegram authentication
+// Telegram authentication (also accepts header X-Telegram-Init-Data)
 router.post(
   '/telegram',
-  [
-    body('telegramData').notEmpty().withMessage('Telegram data is required'),
-    body('hash').notEmpty().withMessage('Hash is required'),
-  ],
+  // body validators are optional now because we may use header; keep non-strict
+  [body('telegramData').optional()],
   validateRequest,
   asyncHandler(authController.telegramAuth)
 );
