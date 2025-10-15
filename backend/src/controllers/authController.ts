@@ -29,28 +29,40 @@ function verifyTelegramInitData(initData: string, botToken: string) {
 
 export const telegramAuth = async (req: Request, res: Response<ApiResponse>) => {
   try {
+    console.log('[AUTH] Telegram auth request started');
     const botToken = process.env.TELEGRAM_BOT_TOKEN || '';
+    console.log('[AUTH] Bot token present:', !!botToken, 'length:', botToken.length);
     if (!botToken) {
+      console.log('[AUTH] ERROR: Bot token not configured');
       return res.status(500).json({ success: false, error: 'Bot token not configured' } as any);
     }
 
     const headerInit = req.get('x-telegram-init-data') || req.get('X-Telegram-Init-Data');
     const bodyInit = (req.body?.telegramData as string) || '';
     const initData = headerInit || bodyInit;
+    console.log('[AUTH] Init data source:', headerInit ? 'header' : bodyInit ? 'body' : 'none');
+    console.log('[AUTH] Init data present:', !!initData, 'length:', initData?.length || 0);
     if (!initData) {
+      console.log('[AUTH] ERROR: Missing init data');
       return res.status(400).json({ success: false, error: 'Missing Telegram init data' } as any);
     }
 
+    console.log('[AUTH] Verifying init data...');
     const parsed = verifyTelegramInitData(initData, botToken);
+    console.log('[AUTH] Verification result:', !!parsed, 'user id:', parsed?.user?.id);
     if (!parsed?.user?.id) {
+      console.log('[AUTH] ERROR: Invalid Telegram data (verification failed)');
       return res.status(401).json({ success: false, error: 'Invalid Telegram data' } as any);
     }
 
     const tg = parsed.user;
+    console.log('[AUTH] Telegram user:', tg.id, tg.username || tg.first_name);
 
     // Upsert user
+    console.log('[AUTH] Looking up user with telegramId:', tg.id);
     let user = await User.findOne({ telegramId: tg.id });
     if (!user) {
+      console.log('[AUTH] User not found, creating new user');
       user = await User.create({
         telegramId: tg.id,
         username: tg.username,
@@ -59,7 +71,9 @@ export const telegramAuth = async (req: Request, res: Response<ApiResponse>) => 
         email: undefined,
         // walletAddress and referralCode are auto-generated in pre-save
       } as any);
+      console.log('[AUTH] User created:', user.id);
     } else {
+      console.log('[AUTH] User found, updating');
       // Update basic fields
       user.username = tg.username || user.username;
       user.firstName = tg.first_name || user.firstName;
@@ -67,9 +81,11 @@ export const telegramAuth = async (req: Request, res: Response<ApiResponse>) => 
       await user.save();
     }
 
+    console.log('[AUTH] Generating tokens');
     const accessToken = signAccessToken({ sub: user.id, tid: user.telegramId });
     const refreshToken = signRefreshToken({ sub: user.id, tid: user.telegramId });
 
+    console.log('[AUTH] Success! Returning user and tokens');
     return res.status(200).json({
       success: true,
       data: {
@@ -80,6 +96,8 @@ export const telegramAuth = async (req: Request, res: Response<ApiResponse>) => 
       },
     } as any);
   } catch (e: any) {
+    console.log('[AUTH] ERROR caught:', e?.message || e);
+    console.error('[AUTH] Stack:', e?.stack);
     return res.status(500).json({ success: false, error: e?.message || 'Auth failed' } as any);
   }
 };
