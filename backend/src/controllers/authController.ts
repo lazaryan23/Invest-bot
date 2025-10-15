@@ -18,10 +18,11 @@ function verifyTelegramInitData(initData: string, botToken: string) {
     }
   });
   console.log('[VERIFY] Params for verification:', entries.length, 'entries');
+  entries.forEach(e => console.log('[VERIFY] Param:', e.substring(0, 80)));
   entries.sort();
   const dataCheckString = entries.join('\n');
   console.log('[VERIFY] Data check string length:', dataCheckString.length);
-  console.log('[VERIFY] Data check string (first 100 chars):', dataCheckString.substring(0, 100));
+  console.log('[VERIFY] Full data check string:', dataCheckString);
 
   const secretKey = crypto.createHash('sha256').update(botToken).digest();
   console.log('[VERIFY] Secret key generated from bot token');
