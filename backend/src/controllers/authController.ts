@@ -7,6 +7,7 @@ import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../utils/
 function verifyTelegramInitData(initData: string, botToken: string) {
   const urlParams = new URLSearchParams(initData);
   const hash = urlParams.get('hash');
+  console.log('[VERIFY] Hash from initData:', hash);
   if (!hash) return null;
 
   // Build data-check-string in lexicographic order excluding hash AND signature
@@ -16,11 +17,19 @@ function verifyTelegramInitData(initData: string, botToken: string) {
       entries.push(`${key}=${value}`);
     }
   });
+  console.log('[VERIFY] Params for verification:', entries.length, 'entries');
   entries.sort();
   const dataCheckString = entries.join('\n');
+  console.log('[VERIFY] Data check string length:', dataCheckString.length);
+  console.log('[VERIFY] Data check string (first 100 chars):', dataCheckString.substring(0, 100));
 
   const secretKey = crypto.createHash('sha256').update(botToken).digest();
+  console.log('[VERIFY] Secret key generated from bot token');
   const hmac = crypto.createHmac('sha256', secretKey).update(dataCheckString).digest('hex');
+  console.log('[VERIFY] Computed HMAC:', hmac);
+  console.log('[VERIFY] Expected hash:', hash);
+  console.log('[VERIFY] Hashes match:', hmac === hash);
+  
   if (hmac !== hash) return null;
 
   // Parse user json
