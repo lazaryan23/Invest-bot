@@ -9,10 +9,12 @@ function verifyTelegramInitData(initData: string, botToken: string) {
   const hash = urlParams.get('hash');
   if (!hash) return null;
 
-  // Build data-check-string in lexicographic order excluding hash
+  // Build data-check-string in lexicographic order excluding hash AND signature
   const entries: string[] = [];
   urlParams.forEach((value, key) => {
-    if (key !== 'hash') entries.push(`${key}=${value}`);
+    if (key !== 'hash' && key !== 'signature') {
+      entries.push(`${key}=${value}`);
+    }
   });
   entries.sort();
   const dataCheckString = entries.join('\n');
