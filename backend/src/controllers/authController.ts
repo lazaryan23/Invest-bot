@@ -24,8 +24,9 @@ function verifyTelegramInitData(initData: string, botToken: string) {
   console.log('[VERIFY] Data check string length:', dataCheckString.length);
   console.log('[VERIFY] Full data check string:', dataCheckString);
 
-  const secretKey = crypto.createHash('sha256').update(botToken).digest();
-  console.log('[VERIFY] Secret key generated from bot token');
+  // Use correct Telegram WebApp validation algorithm
+  const secretKey = crypto.createHmac('sha256', 'WebAppData').update(botToken).digest();
+  console.log('[VERIFY] Secret key generated using WebAppData');
   const hmac = crypto.createHmac('sha256', secretKey).update(dataCheckString).digest('hex');
   console.log('[VERIFY] Computed HMAC:', hmac);
   console.log('[VERIFY] Expected hash:', hash);
