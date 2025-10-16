@@ -4,38 +4,69 @@ import { ApiResponse } from '@investment-bot/shared';
 import { User } from '../models/User';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../utils/jwt';
 
+/**
+ * Verifies the Telegram Mini App initData string.
+ * This implementation uses manual string parsing and decoding to ensure the
+ * dataCheckString is constructed precisely as required by Telegram's validation algorithm,
+ * which avoids common errors related to URLSearchParams's handling of complex fields (like 'user').
+ * @param initData The raw initData string from the Telegram Mini App.
+ * @param botToken The bot's token.
+ * @returns An object containing the parsed user data or null if verification fails.
+ */
 function verifyTelegramInitData(initData: string, botToken: string) {
-  const urlParams = new URLSearchParams(initData);
-  const hash = urlParams.get('hash');
-  console.log('[VERIFY] Hash from initData:', hash);
-  if (!hash) return null;
+  // Use manual split and decode for maximum control over the exact string required for HMAC.
+  const pairs = initData.split('&');
+  const safeEntries: { key: string; value: string }[] = [];
+  let finalHash: string | undefined = undefined;
+  let userRaw: string | undefined;
 
-  // Build data-check-string in lexicographic order excluding hash AND signature
-  const entries: string[] = [];
-  urlParams.forEach((value, key) => {
-    if (key !== 'hash' && key !== 'signature') {
-      entries.push(`${key}=${value}`);
+  for (const pair of pairs) {
+    // Split key=value, handling the possibility that the value itself contains '=' (though rare in initData)
+    const [key, value] = pair.split('=', 2);
+
+    // We must decode the value because the verification check string uses the decoded value.
+    const decodedValue = decodeURIComponent(value);
+
+    if (key === 'hash') {
+      finalHash = decodedValue;
+    } else if (key !== 'signature') {
+      // Collect all other decoded key/value pairs
+      safeEntries.push({ key, value: decodedValue });
+      if (key === 'user') {
+        userRaw = decodedValue;
+      }
     }
-  });
-  console.log('[VERIFY] Params for verification:', entries.length, 'entries');
-  entries.forEach(e => console.log('[VERIFY] Param:', e.substring(0, 80)));
-  entries.sort();
-  const dataCheckString = entries.join('\n');
+  }
+
+  if (!finalHash) return null;
+
+  // 1. Sort entries lexicographically by key
+  console.log('[VERIFY] Params for verification:', safeEntries.length, 'entries');
+  safeEntries.forEach(e => console.log('[VERIFY] Param:', `${e.key}=${e.value}`.substring(0, 80)));
+  safeEntries.sort((a, b) => a.key.localeCompare(b.key));
+
+  // 2. Join them with '\n'
+  const dataCheckString = safeEntries
+      .map(entry => `${entry.key}=${entry.value}`)
+      .join('\n');
+
   console.log('[VERIFY] Data check string length:', dataCheckString.length);
   console.log('[VERIFY] Full data check string:', dataCheckString);
 
-  // Use correct Telegram WebApp validation algorithm
+  // 3. Compute HMAC
   const secretKey = crypto.createHmac('sha256', 'WebAppData').update(botToken).digest();
   console.log('[VERIFY] Secret key generated using WebAppData');
   const hmac = crypto.createHmac('sha256', secretKey).update(dataCheckString).digest('hex');
-  console.log('[VERIFY] Computed HMAC:', hmac);
-  console.log('[VERIFY] Expected hash:', hash);
-  console.log('[VERIFY] Hashes match:', hmac === hash);
 
-  if (hmac !== hash) return null;
+  console.log('[VERIFY] Computed HMAC:', hmac);
+  console.log('[VERIFY] Expected hash:', finalHash);
+
+  const hashesMatch = hmac === finalHash;
+  console.log('[VERIFY] Hashes match:', hashesMatch);
+
+  if (!hashesMatch) return null;
 
   // Parse user json
-  const userRaw = urlParams.get('user');
   const user = userRaw ? JSON.parse(userRaw) : undefined;
   return { user } as any;
 }
