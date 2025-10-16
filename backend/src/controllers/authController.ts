@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import crypto from 'crypto';
 import { ApiResponse } from '@investment-bot/shared';
-import { User } from '@/models/User';
-import { signAccessToken, signRefreshToken, verifyRefreshToken } from '@/utils/jwt';
+import { User } from '../models/User';
+import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../utils/jwt';
 
 function verifyTelegramInitData(initData: string, botToken: string) {
   const urlParams = new URLSearchParams(initData);
