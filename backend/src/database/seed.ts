@@ -34,6 +34,7 @@ async function seed() {
 
   console.log('Connecting to database...');
   await database.connect();
+  console.log('✅ Database connected:', database.isConnectionReady());
 
   console.log('Clearing existing data...');
   await clearCollections();

@@ -205,6 +205,7 @@ const server = app.listen(PORT, async () => {
   try {
     // Connect to DB
     await database.connect();
+    console.log('✅ Database connected:', database.isConnectionReady());
     console.log(`Server running on port ${PORT}`);
 
     // Logging
