@@ -18,23 +18,30 @@ class Database {
       return;
     }
 
-    const mongoUri = process.env.MONGODB_URI;
-    if (!mongoUri) {
+    const mongoUriRaw = process.env.MONGODB_URI;
+    if (!mongoUriRaw) {
       throw new Error('MONGODB_URI environment variable is required');
     }
 
+    // Encode special characters in password for URI safety
+    const mongoUri = this.encodeMongoUri(mongoUriRaw);
+
+    logger.info(`Attempting to connect to MongoDB at URI: ${mongoUri.replace(/:.+@/, ':*****@')}`);
+    mongoose.set('debug', true); // Log all queries & operations
+
     try {
       await mongoose.connect(mongoUri, {
-        // Options for better performance and reliability
-        maxPoolSize: 10, // Maintain up to 10 socket connections
-        serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
-        socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+        maxPoolSize: 10,
+        serverSelectionTimeoutMS: 5000,
+        socketTimeoutMS: 45000,
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
       });
 
       this.isConnected = true;
-      logger.info('Connected to MongoDB successfully');
+      logger.info('✅ Connected to MongoDB successfully');
 
-      // Handle connection events
+      // Connection events
       mongoose.connection.on('error', (error) => {
         logger.error('MongoDB connection error:', error);
         this.isConnected = false;
@@ -50,19 +57,25 @@ class Database {
         this.isConnected = true;
       });
 
-      // Handle app termination
+      // Graceful shutdown
       process.on('SIGINT', this.gracefulShutdown);
       process.on('SIGTERM', this.gracefulShutdown);
     } catch (error) {
-      logger.error('Failed to connect to MongoDB:', error);
+      logger.error('❌ Failed to connect to MongoDB:', error);
       throw error;
     }
   }
 
+  private encodeMongoUri(uri: string): string {
+    // Simple regex to encode password between username:password@
+    return uri.replace(/:\/\/(.*):(.*)@/, (_, user, pass) => {
+      const encodedPass = encodeURIComponent(pass);
+      return `://${user}:${encodedPass}@`;
+    });
+  }
+
   public async disconnect(): Promise<void> {
-    if (!this.isConnected) {
-      return;
-    }
+    if (!this.isConnected) return;
 
     try {
       await mongoose.connection.close();
@@ -74,16 +87,12 @@ class Database {
     }
   }
 
-  public getConnection(): mongoose.Connection {
-    return mongoose.connection;
-  }
-
   public isConnectionReady(): boolean {
     return this.isConnected && mongoose.connection.readyState === 1;
   }
 
   private gracefulShutdown = async (signal: string): Promise<void> => {
-    logger.info(`Received ${signal}. Gracefully shutting down database connection.`);
+    logger.info(`Received ${signal}. Gracefully shutting down MongoDB connection.`);
     try {
       await this.disconnect();
       process.exit(0);
