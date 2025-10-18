@@ -201,24 +201,25 @@ process.on('unhandledRejection', (reason, promise) => {
   process.exit(1);
 });
 
-// Start server
 const server = app.listen(PORT, async () => {
   try {
-    // Connect to database
+    // Connect to DB
     await database.connect();
-    
+    console.log(`Server running on port ${PORT}`);
+
+    // Logging
     logger.info(`🚀 Server is running on port ${PORT}`);
     logger.info(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
     logger.info(`🔗 API URL: http://localhost:${PORT}`);
     logger.info(`🏥 Health Check: http://localhost:${PORT}/health`);
-    
+
     // Start background jobs
     if (process.env.NODE_ENV === 'production') {
       const { startScheduledJobs } = await import('./services/cronJobs');
       startScheduledJobs();
       logger.info('📅 Scheduled jobs started');
     }
-    
+
   } catch (error) {
     logger.error('Failed to start server:', error);
     if (process.env.ALLOW_START_WITHOUT_DB === 'true') {
