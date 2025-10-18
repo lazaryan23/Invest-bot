@@ -34,8 +34,6 @@ class Database {
         maxPoolSize: 10,
         serverSelectionTimeoutMS: 5000,
         socketTimeoutMS: 45000,
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
       });
 
       this.isConnected = true;
