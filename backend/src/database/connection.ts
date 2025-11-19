@@ -32,7 +32,7 @@ class Database {
     try {
       await mongoose.connect(mongoUri, {
         maxPoolSize: 10,
-        serverSelectionTimeoutMS: 5000,
+        serverSelectionTimeoutMS: 30000,
         socketTimeoutMS: 45000,
       });
 
