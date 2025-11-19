@@ -15,7 +15,7 @@ router.get('/stats', (req: Request, res: Response) => {
     },
     referralCode: {
       code: 'INVEST-000',
-      url: 'https://t.me/your_bot?start=INVEST-000',
+      url: 'https://t.me/Invest_smartBot?start=INVEST-000',
       clicks: 0,
       registrations: 0,
       createdAt: new Date().toISOString(),
@@ -32,7 +32,7 @@ router.get('/stats', (req: Request, res: Response) => {
 router.get('/code', (req: Request, res: Response) => {
   const data = {
     code: 'INVEST-000',
-    url: 'https://t.me/your_bot?start=INVEST-000',
+    url: 'https://t.me/Invest_smartBot?start=INVEST-000',
     clicks: 0,
     registrations: 0,
     createdAt: new Date().toISOString(),
