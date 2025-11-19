@@ -24,7 +24,7 @@ class Database {
     }
 
     // Encode special characters in password for URI safety
-    const mongoUri = this.encodeMongoUri(mongoUriRaw);
+    const mongoUri = mongoUriRaw;
 
     logger.info(`Attempting to connect to MongoDB at URI: ${mongoUri.replace(/:.+@/, ':*****@')}`);
     mongoose.set('debug', true); // Log all queries & operations
