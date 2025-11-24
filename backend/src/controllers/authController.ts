@@ -64,9 +64,6 @@ export const telegramAuth = async (req: Request, res: Response) => {
                 username: tgUser.username,
                 firstName: tgUser.first_name,
                 lastName: tgUser.last_name,
-
-                referralCode: 'DEFAULT_CODE',
-                walletAddress: '0x0000000000000000000000000000000000000000',
             });
         }
 
