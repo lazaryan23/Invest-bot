@@ -1,9 +1,10 @@
 import { Router, Request, Response } from 'express';
+import { authMiddleware, AuthenticatedRequest } from '../middleware/auth';
 
 const router = Router();
 
 // GET /api/dashboard/stats
-router.get('/stats', (req: Request, res: Response) => {
+router.get('/stats', authMiddleware, (req: AuthenticatedRequest, res: Response) => {
   const data = {
     stats: {
       totalBalance: 0,
@@ -24,7 +25,7 @@ router.get('/stats', (req: Request, res: Response) => {
 });
 
 // GET /api/dashboard/recent-activities
-router.get('/recent-activities', (req: Request, res: Response) => {
+router.get('/recent-activities', authMiddleware, (req: AuthenticatedRequest, res: Response) => {
   const data: any[] = [];
   return res.status(200).json({ success: true, data });
 });
