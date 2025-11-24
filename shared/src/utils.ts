@@ -1,10 +1,12 @@
 import * as crypto from 'crypto';
 
-// Generate random referral code
+// Generate random numeric referral code
 export function generateReferralCode(length: number = 8): string {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const characters = '0123456789';
   let result = '';
-  for (let i = 0; i < length; i++) {
+  // Ensure first digit is not 0 for better readability
+  result += characters.charAt(Math.floor(Math.random() * 9) + 1);
+  for (let i = 1; i < length; i++) {
     result += characters.charAt(Math.floor(Math.random() * characters.length));
   }
   return result;

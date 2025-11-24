@@ -31,28 +31,27 @@ export class BotService {
       const chatId = msg.chat.id;
       const referralCode = match?.[1];
 
+      // Get web app URL from environment or use default
+      const webAppUrl = process.env.WEB_APP_URL || 'https://invest-bot1.onrender.com';
+
       const keyboard = {
         inline_keyboard: [
           [
-            { text: '📊 Dashboard', callback_data: 'dashboard' },
-            { text: '💰 Wallet', callback_data: 'wallet' },
-          ],
-          [
-            { text: '📈 Invest', callback_data: 'invest' },
-            { text: '👥 Referrals', callback_data: 'referrals' },
-          ],
-          [
-            { text: 'ℹ️ Help', callback_data: 'help' },
+            { 
+              text: '🚀 Open Investment App', 
+              web_app: { url: webAppUrl }
+            },
           ],
         ],
       };
 
-      const text = BOT_MESSAGES.WELCOME;
-      const options: SendMessageOptions = { reply_markup: keyboard, parse_mode: 'Markdown' };
-
+      let text = BOT_MESSAGES.WELCOME;
       if (referralCode) {
+        text += `\n\n🎉 *You were referred with code:* \`${referralCode}\``;
         logger.info('User started bot with referral code', { chatId, referralCode });
       }
+
+      const options: SendMessageOptions = { reply_markup: keyboard, parse_mode: 'Markdown' };
 
       try {
         await this.bot.sendMessage(chatId, text, options);
@@ -80,37 +79,8 @@ export class BotService {
     if (!chatId || !data) return;
 
     try {
-      switch (data) {
-        case 'dashboard': {
-          await this.bot.answerCallbackQuery({ callback_query_id: query.id });
-          await this.bot.sendMessage(chatId, '📊 Your dashboard is coming soon.');
-          break;
-        }
-        case 'wallet': {
-          await this.bot.answerCallbackQuery({ callback_query_id: query.id });
-          await this.bot.sendMessage(chatId, '💼 Wallet view is coming soon.');
-          break;
-        }
-        case 'invest': {
-          await this.bot.answerCallbackQuery({ callback_query_id: query.id });
-          await this.bot.sendMessage(chatId, '📈 Investment options are coming soon.');
-          break;
-        }
-        case 'referrals': {
-          await this.bot.answerCallbackQuery({ callback_query_id: query.id });
-          await this.bot.sendMessage(chatId, '👥 Referral info is coming soon.');
-          break;
-        }
-        case 'help': {
-          await this.bot.answerCallbackQuery({ callback_query_id: query.id });
-          await this.bot.sendMessage(chatId, BOT_MESSAGES.HELP, { parse_mode: 'Markdown' });
-          break;
-        }
-        default: {
-          await this.bot.answerCallbackQuery({ callback_query_id: query.id });
-          await this.bot.sendMessage(chatId, 'Unknown action.');
-        }
-      }
+      // No callbacks needed for now since we only have web app button
+      await this.bot.answerCallbackQuery({ callback_query_id: query.id });
     } catch (error) {
       logger.error('Failed to handle callback', { error: (error as Error).message, data, chatId });
     }

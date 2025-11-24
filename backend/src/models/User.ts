@@ -49,7 +49,6 @@ const userSchema = new Schema<UserDocument>(
       type: String,
       required: true,
       unique: true,
-      uppercase: true,
     },
     referredBy: {
       type: String,
@@ -94,9 +93,6 @@ const userSchema = new Schema<UserDocument>(
 );
 
 // Indexes for better query performance
-userSchema.index({ telegramId: 1 });
-userSchema.index({ referralCode: 1 });
-userSchema.index({ walletAddress: 1 });
 userSchema.index({ createdAt: -1 });
 userSchema.index({ isActive: 1 });
 
@@ -140,7 +136,7 @@ userSchema.statics.findByTelegramId = function (telegramId: number) {
 };
 
 userSchema.statics.findByReferralCode = function (referralCode: string) {
-  return this.findOne({ referralCode: referralCode.toUpperCase() });
+  return this.findOne({ referralCode: referralCode.trim() });
 };
 
 userSchema.statics.getActiveUsers = function () {

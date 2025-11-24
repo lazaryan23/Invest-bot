@@ -7,6 +7,7 @@ import {
     verifyAccessToken,
 } from '../utils/jwt';
 import { User } from '../models/User';
+import { Referral } from '../models/Referral';
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
 
@@ -56,8 +57,19 @@ export const telegramAuth = async (req: Request, res: Response) => {
             return res.status(400).json({ success: false, error: 'Invalid Telegram user data' });
         }
 
+        // Extract referral code from start_param if present
+        let referralCode: string | undefined;
+        for (const { key, value } of safeEntries) {
+            if (key === 'start_param') {
+                referralCode = value;
+                break;
+            }
+        }
+
         // Create or update user
         let user = await User.findOne({ telegramId: tgUser.id });
+        const isNewUser = !user;
+        
         if (!user) {
             user = await User.create({
                 telegramId: tgUser.id,
@@ -65,6 +77,31 @@ export const telegramAuth = async (req: Request, res: Response) => {
                 firstName: tgUser.first_name,
                 lastName: tgUser.last_name,
             });
+        }
+        
+        // Handle referral if this is a new user and referral code was provided
+        if (isNewUser && referralCode) {
+            try {
+                const referrer = await User.findOne({ referralCode });
+                if (referrer && referrer.id !== user.id) {
+                    // Create referral relationship
+                    await Referral.create({
+                        referrerId: referrer.id,
+                        referredUserId: user.id,
+                        bonusAmount: 0, // Will be updated when referred user invests
+                        isActive: true,
+                    });
+                    
+                    // Update user's referredBy field
+                    user.referredBy = referrer.id;
+                    await user.save();
+                    
+                    console.log(`[REFERRAL] User ${user.id} referred by ${referrer.id} with code ${referralCode}`);
+                }
+            } catch (error: any) {
+                console.error('[REFERRAL ERROR]', error.message);
+                // Don't fail auth if referral creation fails
+            }
         }
 
         // Tokens
